@@ -1,3 +1,4 @@
+import sys
 import requests
 import json
 import hashlib
@@ -7,7 +8,8 @@ from prettytable import PrettyTable
 def scrape(address, username, password):
 
     url_base = 'http://' + address
-    pw_hash = hashlib.md5(password).hexdigest().upper()
+    pw_hash = hashlib.md5(password.encode('utf-8')).hexdigest().upper()
+    print(pw_hash)
 
     with requests.Session() as session:
 
@@ -18,21 +20,21 @@ def scrape(address, username, password):
             
             o = json.loads(r.content)
             
-            if o.has_key('notLogin') and o['notLogin'] is True:
+            if 'notLogin' in o and o['notLogin'] is True:
                 print('login failure')
                 return False
-            elif o.has_key('data'):
+            elif 'data' in o:
                 return o['data']
             else:
                 print('other response failure')
                 return False
 
         except:
-            print('request failure')
+            print('request failure: ', sys.exc_info())
             return False
             
 
-ap = scrape('1.2.3.4', 'user', 'password')
+ap = scrape('192.168.0.2', 'user', 'password')
 
 if ap:
     t = PrettyTable(['AP', 'SSID', 'MAC', 'IP', 'Device Name', 'Active Time'])
